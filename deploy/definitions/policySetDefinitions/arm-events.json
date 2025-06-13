@@ -1,0 +1,211 @@
+{
+    "$schema": "https://raw.githubusercontent.com/Azure/enterprise-azure-policy-as-code/main/Schemas/policy-set-definition-schema.json",
+    "name": "608db6b2-8aae-41c9-abe3-99d1b3356c47",
+    "properties": {
+        "displayName": "ARM Events Policy Set Definition",
+        "description": "Iniative to enable capturing selected ARM events from your subscription.",
+        "metadata": {
+            "category": "Automation",
+            "version": "0.1.0"
+        },
+        "parameters": {
+            "effect": {
+                "type": "string",
+                "defaultValue": "DeployIfNotExists",
+                "allowedValues": [
+                    "DeployIfNotExists",
+                    "AuditIfNotExists",
+                    "Disabled"
+                ],
+                "metadata": {
+                    "description": "The effect of the policy. 'DeployIfNotExists' will deploy the Event Grid System Topic if it does not exist, while 'Disabled' will disable the policy."
+                }
+            },
+            "armEventsResourceGroupName": {
+                "type": "string",
+                "defaultValue": "mgmt-arm-events",
+                "metadata": {
+                    "description": "The name of the resource group where the Event Grid System Topic will be created."
+                }
+            },
+            "armEventsSystemTopicName": {
+                "type": "string",
+                "defaultValue": "egst-armevents-subscription",
+                "metadata": {
+                    "description": "The name of the Event Grid System Topic."
+                }
+            },
+            "armEventsLocation": {
+                "type": "string",
+                "defaultValue": "westeurope",
+                "metadata": {
+                    "description": "The location for the Event Grid System Topic."
+                }
+            },
+            "armEventslogAnalyticsWorkspaceId": {
+                "type": "string",
+                "metadata": {
+                    "description": "The ID of the Log Analytics Workspace to which the Event Grid System Topic will send logs."
+                }
+            },
+            "armEventsSystemTopicUserManagedIdentityId": {
+                "type": "string",
+                "metadata": {
+                    "description": "The User Managed Identity ID to be assigned to the Event Grid System Topic."
+                }
+            },
+            "armEventsEventHubResourceId": {
+                "type": "string",
+                "metadata": {
+                    "description": "The resource ID of the Event Hub to which the events will be sent."
+                }
+            }
+        },
+        "policyDefinitions": [
+            {
+                "policyDefinitionReferenceId": "arm-subscription-events-system-topic-creation",
+                "policyDefinitionId": "16b6576b-5c99-40e1-b1bf-d09c40b55ca1",
+                "parameters": {
+                    "effect": {
+                        "value": "[parameters('effect')]"
+                    },
+                    "armEventsResourceGroupName": {
+                        "value": "[parameters('armEventsResourceGroupName')]"
+                    },
+                    "armEventsSystemTopicName": {
+                        "value": "[parameters('armEventsSystemTopicName')]"
+                    },
+                    "armEventsLocation": {
+                        "value": "[parameters('armEventsLocation')]"
+                    },
+                    "armEventslogAnalyticsWorkspaceId": {
+                        "value": "[parameters('armEventslogAnalyticsWorkspaceId')]"
+                    },
+                    "armEventsSystemTopicUserManagedIdentityId": {
+                        "value": "[parameters('armEventsSystemTopicUserManagedIdentityId')]"
+                    }
+                }
+            },
+            {
+                "policyDefinitionReferenceId": "arm-resource-group-write-event-subscription",
+                "policyDefinitionId": "7003f9d4-cdec-4981-8592-351996c6a580",
+                "parameters": {
+                    "effect": {
+                        "value": "[parameters('effect')]"
+                    },
+                    "armEventsResourceGroupName": {
+                        "value": "[parameters('armEventsResourceGroupName')]"
+                    },
+                    "armEventsSystemTopicName": {
+                        "value": "[parameters('armEventsSystemTopicName')]"
+                    },
+                    "armEventsLocation": {
+                        "value": "[parameters('armEventsLocation')]"
+                    },
+                    "armEventsSystemTopicUserManagedIdentityId": {
+                        "value": "[parameters('armEventsSystemTopicUserManagedIdentityId')]"
+                    },
+                    "armEventsEventHubResourceId": {
+                        "value": "[parameters('armEventsEventHubResourceId')]"
+                    }
+                }
+            }            ,
+            {
+                "policyDefinitionReferenceId": "arm-resource-group-delete-event-subscription",
+                "policyDefinitionId": "8f79d62f-69e9-4f03-84c8-48b4eaee4e63",
+                "parameters": {
+                    "effect": {
+                        "value": "[parameters('effect')]"
+                    },
+                    "armEventsResourceGroupName": {
+                        "value": "[parameters('armEventsResourceGroupName')]"
+                    },
+                    "armEventsSystemTopicName": {
+                        "value": "[parameters('armEventsSystemTopicName')]"
+                    },
+                    "armEventsLocation": {
+                        "value": "[parameters('armEventsLocation')]"
+                    },
+                    "armEventsSystemTopicUserManagedIdentityId": {
+                        "value": "[parameters('armEventsSystemTopicUserManagedIdentityId')]"
+                    },
+                    "armEventsEventHubResourceId": {
+                        "value": "[parameters('armEventsEventHubResourceId')]"
+                    }
+                }
+            },
+            {
+                "policyDefinitionReferenceId": "arm-aks-cluster-write-event-subscription",
+                "policyDefinitionId": "9e3872ee-11cf-4654-85d2-319cee42ff2b",
+                "parameters": {
+                    "effect": {
+                        "value": "[parameters('effect')]"
+                    },
+                    "armEventsResourceGroupName": {
+                        "value": "[parameters('armEventsResourceGroupName')]"
+                    },
+                    "armEventsSystemTopicName": {
+                        "value": "[parameters('armEventsSystemTopicName')]"
+                    },
+                    "armEventsLocation": {
+                        "value": "[parameters('armEventsLocation')]"
+                    },
+                    "armEventsSystemTopicUserManagedIdentityId": {
+                        "value": "[parameters('armEventsSystemTopicUserManagedIdentityId')]"
+                    },
+                    "armEventsEventHubResourceId": {
+                        "value": "[parameters('armEventsEventHubResourceId')]"
+                    }
+                }
+            },
+            {
+                "policyDefinitionReferenceId": "arm-aks-cluster-delete-event-subscription",
+                "policyDefinitionId": "30202b44-9603-49ac-bc12-54a8c6aee27f",
+                "parameters": {
+                    "effect": {
+                        "value": "[parameters('effect')]"
+                    },
+                    "armEventsResourceGroupName": {
+                        "value": "[parameters('armEventsResourceGroupName')]"
+                    },
+                    "armEventsSystemTopicName": {
+                        "value": "[parameters('armEventsSystemTopicName')]"
+                    },
+                    "armEventsLocation": {
+                        "value": "[parameters('armEventsLocation')]"
+                    },
+                    "armEventsSystemTopicUserManagedIdentityId": {
+                        "value": "[parameters('armEventsSystemTopicUserManagedIdentityId')]"
+                    },
+                    "armEventsEventHubResourceId": {
+                        "value": "[parameters('armEventsEventHubResourceId')]"
+                    }
+                }
+            },
+            {
+                "policyDefinitionReferenceId": "arm-tags-write-event-subscription",
+                "policyDefinitionId": "31acdd40-4698-4470-b2e1-5c9020991c7d",
+                "parameters": {
+                    "effect": {
+                        "value": "[parameters('effect')]"
+                    },
+                    "armEventsResourceGroupName": {
+                        "value": "[parameters('armEventsResourceGroupName')]"
+                    },
+                    "armEventsSystemTopicName": {
+                        "value": "[parameters('armEventsSystemTopicName')]"
+                    },
+                    "armEventsLocation": {
+                        "value": "[parameters('armEventsLocation')]"
+                    },
+                    "armEventsSystemTopicUserManagedIdentityId": {
+                        "value": "[parameters('armEventsSystemTopicUserManagedIdentityId')]"
+                    },
+                    "armEventsEventHubResourceId": {
+                        "value": "[parameters('armEventsEventHubResourceId')]"
+                    }
+                }
+            }
+        ]
+    }
+}

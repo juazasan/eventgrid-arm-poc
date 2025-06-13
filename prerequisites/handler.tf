@@ -43,11 +43,7 @@ resource "azurerm_eventhub_namespace" "eventhub_ns" {
   network_rulesets {
     public_network_access_enabled  = true
     trusted_service_access_enabled = true
-    default_action                 = "Deny"
-    ip_rule {
-      ip_mask = "${jsondecode(data.http.local_ip.response_body).ip}/32"
-      action  = "Allow"
-    }
+    default_action                 = "Allow"
   }
   identity {
     type = "SystemAssigned"
@@ -71,21 +67,30 @@ resource "azurerm_eventhub" "eventhub" {
   }
 }
 
-resource "azurerm_user_assigned_identity" "eventhub_send_account" {
-  name                = "msi-${azurerm_resource_group.rg.name}-eventhub-send-account"
+resource "azurerm_user_assigned_identity" "mi_eventgrid_system_topic" {
+  name                = "mi-${azurerm_eventhub.eventhub.name}-sender"
   location            = azurerm_resource_group.rg.location
   resource_group_name = azurerm_resource_group.rg.name
 }
 
 resource "azurerm_role_assignment" "eventhub_send_role" {
-  principal_id = azurerm_eventgrid_system_topic.topic_arm.identity[0].principal_id
+  principal_id         = azurerm_user_assigned_identity.mi_eventgrid_system_topic.principal_id
   role_definition_name = "Azure Event Hubs Data Sender"
-  scope                = azurerm_eventhub_namespace.eventhub_ns.id
+  scope                = azurerm_eventhub.eventhub.id
 }
 
 resource "azurerm_role_assignment" "eventhub_receive_role" {
-  principal_id = data.azurerm_client_config.current.object_id
+  principal_id         = data.azurerm_client_config.current.object_id
   role_definition_name = "Azure Event Hubs Data Receiver"
   scope                = azurerm_eventhub_namespace.eventhub_ns.id
 }
 
+# monitoring resources
+
+resource "azurerm_log_analytics_workspace" "law" {
+  name                = "law-${azurerm_resource_group.rg.name}"
+  location            = azurerm_resource_group.rg.location
+  resource_group_name = azurerm_resource_group.rg.name
+  sku                 = "PerGB2018"
+  retention_in_days   = 30
+}

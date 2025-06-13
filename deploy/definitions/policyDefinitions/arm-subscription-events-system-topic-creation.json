@@ -1,0 +1,253 @@
+{
+    "$schema": "https://raw.githubusercontent.com/Azure/enterprise-azure-policy-as-code/main/Schemas/policy-definition-schema.json",
+    "name": "16b6576b-5c99-40e1-b1bf-d09c40b55ca1",
+    "properties": {
+        "policyType": "Custom",
+        "mode": "All",
+        "displayName": "ARM Subscription Events System Topic Creation Policy",
+        "description": "This policy deploys an Event Grid's Azure Subscriptions System Topic to every subscription.",
+        "metadata": {
+            "category": "Automation",
+            "version": "0.1.0",
+            "preview": true,
+            "deprecated": false
+        },
+        "parameters": {
+            "effect": {
+                "type": "string",
+                "metadata": {
+                    "displayName": "Effect",
+                    "description": "Deploy the execution of the policy"
+                },
+                "allowedValues": [
+                    "DeployIfNotExists",
+                    "AuditIfNotExists",
+                    "Disabled"
+                ],
+                "defaultValue": "DeployIfNotExists"
+            },
+            "armEventsResourceGroupName": {
+                "type": "string",
+                "defaultValue": "mgmt-arm-events",
+                "metadata": {
+                    "description": "The name of the resource group where the Event Grid System Topic will be created."
+                }
+            },
+            "armEventsSystemTopicName": {
+                "type": "string",
+                "defaultValue": "egst-armevents-subscription",
+                "metadata": {
+                    "description": "The name of the Event Grid System Topic."
+                }
+            },
+            "armEventsLocation": {
+                "type": "string",
+                "defaultValue": "westeurope",
+                "metadata": {
+                    "description": "The location for the Event Grid System Topic."
+                }
+            },
+            "armEventslogAnalyticsWorkspaceId": {
+                "type": "string",
+                "metadata": {
+                    "description": "The ID of the Log Analytics Workspace to which the Event Grid System Topic will send logs."
+                }
+            },
+            "armEventsSystemTopicUserManagedIdentityId": {
+                "type": "string",
+                "metadata": {
+                    "description": "The User Managed Identity ID to be assigned to the Event Grid System Topic."
+                }
+            }
+        },
+        "policyRule": {
+            "if": {
+                "allOf": [
+                    {
+                        "field": "type",
+                        "equals": "Microsoft.Resources/subscriptions"
+                    },
+                    {
+                        "field": "tags['arm-events-disabled']",
+                        "notEquals": "true"
+                    }
+                ]
+            },
+            "then": {
+                "effect": "[parameters('effect')]",
+                "details": {
+                    "type": "Microsoft.EventGrid/systemTopics",
+                    "deployment": {
+                        "location": "westeurope",
+                        "properties": {
+                            "mode": "Incremental",
+                            "parameters": {
+                                "armEventsResourceGroupName": {
+                                    "value": "[parameters('armEventsResourceGroupName')]"
+                                },
+                                "armEventsSystemTopicName": {
+                                    "value": "[parameters('armEventsSystemTopicName')]"
+                                },
+                                "armEventsLocation": {
+                                    "value": "[parameters('armEventsLocation')]"
+                                },
+                                "armEventsLogAnalyticsWorkspaceId": {
+                                    "value": "[parameters('armEventsLogAnalyticsWorkspaceId')]"
+                                },
+                                "armEventsSystemTopicUserManagedIdentityId": {
+                                    "value": "[parameters('armEventsSystemTopicUserManagedIdentityId')]"
+                                }
+                            },
+                            "template": {
+                                "$schema": "https://schema.management.azure.com/schemas/2018-05-01/subscriptionDeploymentTemplate.json#",
+                                "contentVersion": "1.0.0.0",
+                                "parameters": {
+                                    "armEventsResourceGroupName": {
+                                        "type": "string",
+                                        "defaultValue": "mgmt-arm-events",
+                                        "metadata": {
+                                            "description": "Name of the Resource Group to create the Event Grid System Topic in."
+                                        }
+                                    },
+                                    "armEventsSystemTopicName": {
+                                        "type": "string",
+                                        "defaultValue": "egst-armevents-subscription",
+                                        "metadata": {
+                                            "description": "Name of the Event Grid System Topic"
+                                        }
+                                    },
+                                    "armEventsLocation": {
+                                        "type": "string",
+                                        "defaultValue": "westeurope",
+                                        "metadata": {
+                                            "description": "Location for the Event Grid System Topic"
+                                        }
+                                    },
+                                    "armEventsLogAnalyticsWorkspaceId": {
+                                        "type": "string",
+                                        "metadata": {
+                                            "description": "The ID of the Log Analytics Workspace to which the Event Grid System Topic will send logs."
+                                        }
+                                    },
+                                    "armEventsSystemTopicUserManagedIdentityId": {
+                                        "type": "string",
+                                        "metadata": {
+                                            "description": "The User Managed Identity ID to be assigned to the Event Grid System Topic."
+                                        }
+                                    }
+                                },
+                                "resources": [
+                                    {
+                                        "type": "Microsoft.Resources/resourceGroups",
+                                        "apiVersion": "2025-04-01",
+                                        "name": "[parameters('armEventsResourceGroupName')]",
+                                        "location": "[parameters('armEventsLocation')]",
+                                        "properties": {}
+                                    },
+                                    {
+                                        "type": "Microsoft.Resources/deployments",
+                                        "apiVersion": "2025-04-01",
+                                        "name": "CreateSystemTopic",
+                                        "dependsOn": [
+                                            "[resourceId('Microsoft.Resources/resourceGroups', parameters('armEventsResourceGroupName'))]"
+                                        ],
+                                        "resourceGroup": "[parameters('armEventsResourceGroupName')]",
+                                        "properties": {
+                                            "mode": "Incremental",
+                                            "expressionEvaluationOptions": {
+                                                "scope": "inner"
+                                            },
+                                            "parameters": {
+                                                "armEventsSystemTopicName": {
+                                                    "value": "[parameters('armEventsSystemTopicName')]"
+                                                },
+                                                "armEventsLogAnalyticsWorkspaceId": {
+                                                    "value": "[parameters('armEventsLogAnalyticsWorkspaceId')]"
+                                                },
+                                                "armEventsSystemTopicUserManagedIdentityId": {
+                                                    "value": "[parameters('armEventsSystemTopicUserManagedIdentityId')]"
+                                                }
+                                            },
+                                            "template": {
+                                                "$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentTemplate.json#",
+                                                "contentVersion": "1.0.0.0",
+                                                "variables": {},
+                                                "outputs": {},
+                                                "parameters": {
+                                                    "armEventsSystemTopicName": {
+                                                        "type": "string",
+                                                        "metadata": {
+                                                            "description": "Name of the Event Grid System Topic"
+                                                        }
+                                                    },
+                                                    "armEventsLogAnalyticsWorkspaceId": {
+                                                        "type": "string",
+                                                        "metadata": {
+                                                            "description": "The ID of the Log Analytics Workspace to which the Event Grid System Topic will send logs."
+                                                        }
+                                                    },
+                                                    "armEventsSystemTopicUserManagedIdentityId": {
+                                                        "type": "string",
+                                                        "metadata": {
+                                                            "description": "The User Managed Identity ID to be assigned to the Event Grid System Topic."
+                                                        }
+                                                    }
+                                                },
+                                                "resources": [
+                                                    {
+                                                        "type": "Microsoft.EventGrid/systemTopics",
+                                                        "apiVersion": "2025-02-15",
+                                                        "name": "[parameters('armEventsSystemTopicName')]",
+                                                        "location": "Global",
+                                                        "identity": {
+                                                            "type": "UserAssigned",
+                                                            "userAssignedIdentities": {
+                                                                "[parameters('armEventsSystemTopicUserManagedIdentityId')]": {}
+                                                            }
+                                                        },
+                                                        "properties": {
+                                                            "source": "[subscription().id]",
+                                                            "topicType": "Microsoft.Resources.Subscriptions"
+                                                        }
+                                                    },
+                                                    {
+                                                        "type": "Microsoft.Insights/diagnosticSettings",
+                                                        "apiVersion": "2021-05-01-preview",
+                                                        "name": "[concat(parameters('armEventsSystemTopicName'), '-diagnostic')]",
+                                                        "scope": "[resourceId('Microsoft.EventGrid/systemTopics', parameters('armEventsSystemTopicName'))]",
+                                                        "dependsOn": [
+                                                            "[resourceId('Microsoft.EventGrid/systemTopics', parameters('armEventsSystemTopicName'))]"
+                                                        ],
+                                                        "properties": {
+                                                            "workspaceId": "[parameters('armEventsLogAnalyticsWorkspaceId')]",
+                                                            "logs": [
+                                                                {
+                                                                    "category": "DeliveryFailures",
+                                                                    "enabled": true
+                                                                }
+                                                            ]
+                                                        }
+                                                    }
+                                                ]
+                                            }
+                                        }
+                                    }
+                                ]
+                            }
+                        }
+                    },
+                    "deploymentScope": "subscription",
+                    "existenceCondition": {
+                        "field": "name",
+                        "equals": "[parameters('armEventsSystemTopicName')]"
+                    },
+                    "existenceScope": "resourceGroup",
+                    "resourceGroupName": "[parameters('armEventsResourceGroupName')]",
+                    "roleDefinitionIds": [
+                        "/providers/Microsoft.Authorization/roleDefinitions/b24988ac-6180-42a0-ab88-20f7382dd24c"
+                    ]
+                }
+            }
+        }
+    }
+}

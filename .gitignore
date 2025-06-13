@@ -109,3 +109,5 @@ venv.bak/
 # my files
 
 log.json
+.tests
+archive

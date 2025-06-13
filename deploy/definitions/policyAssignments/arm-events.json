@@ -1,0 +1,35 @@
+{
+    "managementGroupId": "/providers/Microsoft.Management/managementGroups/landingZones",
+    "definitionEntry": {
+        "policySetName": "608db6b2-8aae-41c9-abe3-99d1b3356c47"
+    },
+    "assignment": {
+        "name": "arm-events",
+        "location": "westeurope",
+        "displayName": "ARM Events Policy Assignment",
+        "description": "This policy assignment enables capturing selected ARM events from your subscription and sending them to an Event Grid System Topic."
+    },
+    "parameters": {
+        "effect": {
+            "value": "DeployIfNotExists"
+        },
+        "armEventsResourceGroupName": {
+            "value": "mgmt-arm-events"
+        },
+        "armEventsSystemTopicName": {
+            "value": "egst-armevents-subscription"
+        },
+        "armEventsLocation": {
+            "value": "westeurope"
+        },
+        "armEventslogAnalyticsWorkspaceId": {
+            "value": "/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/eventgrid-arm-poc/providers/Microsoft.OperationalInsights/workspaces/law-eventgrid-arm-poc"
+        },
+        "armEventsSystemTopicUserManagedIdentityId": {
+            "value": "/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/eventgrid-arm-poc/providers/Microsoft.ManagedIdentity/userAssignedIdentities/mi-eh-eventgrid-arm-poc-sender"
+        },
+        "armEventsEventHubResourceId": {
+            "value": "/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/eventgrid-arm-poc/providers/Microsoft.EventHub/namespaces/ehns-eventgrid-000000000/eventhubs/eh-eventgrid-arm-poc"
+        }
+    }
+}

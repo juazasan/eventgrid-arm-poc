@@ -1,0 +1,187 @@
+{
+    "$schema": "https://raw.githubusercontent.com/Azure/enterprise-azure-policy-as-code/main/Schemas/policy-definition-schema.json",
+    "name": "30202b44-9603-49ac-bc12-54a8c6aee27f",
+    "properties": {
+        "policyType": "Custom",
+        "mode": "All",
+        "displayName": "ARM AKS Cluster Resource Delete Events Subscription Policy",
+        "description": "This policy enables sending AKS Cluster Resource Delete Events to an Event Hub.",
+        "metadata": {
+            "category": "Automation",
+            "version": "0.1.0",
+            "preview": true,
+            "deprecated": false
+        },
+        "parameters": {
+            "effect": {
+                "type": "string",
+                "metadata": {
+                    "displayName": "Effect",
+                    "description": "Deploy the execution of the policy"
+                },
+                "allowedValues": [
+                    "DeployIfNotExists",
+                    "AuditIfNotExists",
+                    "Disabled"
+                ],
+                "defaultValue": "DeployIfNotExists"
+            },
+            "armEventsResourceGroupName": {
+                "type": "string",
+                "defaultValue": "mgmt-arm-events",
+                "metadata": {
+                    "description": "The name of the resource group where the Event Grid System Topic will be created."
+                }
+            },
+            "armEventsSystemTopicName": {
+                "type": "string",
+                "defaultValue": "egst-armevents-subscription",
+                "metadata": {
+                    "description": "The name of the Event Grid System Topic."
+                }
+            },
+            "armEventsLocation": {
+                "type": "string",
+                "defaultValue": "westeurope",
+                "metadata": {
+                    "description": "The location for the Event Grid System Topic."
+                }
+            },
+            "armEventsSystemTopicUserManagedIdentityId": {
+                "type": "string",
+                "metadata": {
+                    "description": "The User Managed Identity ID to be assigned to the Event Grid System Topic."
+                }
+            },
+            "armEventsEventHubResourceId": {
+                "type": "string",
+                "metadata": {
+                    "description": "The resource ID of the Event Hub to which the events will be sent."
+                }
+            }
+        },
+        "policyRule": {
+            "if": {
+                "allOf": [
+                    {
+                        "field": "type",
+                        "equals": "Microsoft.EventGrid/systemTopics"
+                    },
+                    {
+                        "field": "name",
+                        "equals": "[parameters('armEventsSystemTopicName')]"
+                    }
+                ]
+            },
+            "then": {
+                "effect": "[parameters('effect')]",
+                "details": {
+                    "type": "Microsoft.EventGrid/systemTopics/eventSubscriptions",
+                    "deployment": {
+                        "properties": {
+                            "mode": "Incremental",
+                            "parameters": {
+                                "armEventsResourceGroupName": {
+                                    "value": "[parameters('armEventsResourceGroupName')]"
+                                },
+                                "armEventsSystemTopicName": {
+                                    "value": "[parameters('armEventsSystemTopicName')]"
+                                },
+                                "armEventsLocation": {
+                                    "value": "[parameters('armEventsLocation')]"
+                                },
+                                "armEventsSystemTopicUserManagedIdentityId": {
+                                    "value": "[parameters('armEventsSystemTopicUserManagedIdentityId')]"
+                                },
+                                "armEventsEventHubResourceId": {
+                                    "value": "[parameters('armEventsEventHubResourceId')]"
+                                }
+                            },
+                            "template": {
+                                "$schema": "https://schema.management.azure.com/schemas/2018-05-01/subscriptionDeploymentTemplate.json#",
+                                "contentVersion": "1.0.0.0",
+                                "parameters": {
+                                    "armEventsResourceGroupName": {
+                                        "type": "string",
+                                        "defaultValue": "mgmt-arm-events",
+                                        "metadata": {
+                                            "description": "Name of the Resource Group to create the Event Grid System Topic in."
+                                        }
+                                    },
+                                    "armEventsSystemTopicName": {
+                                        "type": "string",
+                                        "defaultValue": "egst-armevents-subscription",
+                                        "metadata": {
+                                            "description": "Name of the Event Grid System Topic"
+                                        }
+                                    },
+                                    "armEventsLocation": {
+                                        "type": "string",
+                                        "defaultValue": "westeurope",
+                                        "metadata": {
+                                            "description": "Location for the Event Grid System Topic"
+                                        }
+                                    },
+                                    "armEventsSystemTopicUserManagedIdentityId": {
+                                        "type": "string",
+                                        "metadata": {
+                                            "description": "The User Managed Identity ID to be assigned to the Event Grid System Topic."
+                                        }
+                                    },
+                                    "armEventsEventHubResourceId": {
+                                        "type": "string",
+                                        "metadata": {
+                                            "description": "The resource ID of the Event Hub to which the events will be sent."
+                                        }
+                                    }
+                                },
+                                "resources": [
+                                    {
+                                        "type": "Microsoft.EventGrid/systemTopics/eventSubscriptions",
+                                        "apiVersion": "2025-02-15",
+                                        "name": "[concat(parameters('armEventsSystemTopicName'), '/', parameters('armEventsSystemTopicName'),'-aks-deletes')]",
+                                        "properties": {
+                                            "deliveryWithResourceIdentity": {
+                                                "destination": {
+                                                    "endpointType": "EventHub",
+                                                    "properties": {
+                                                        "resourceId": "[parameters('armEventsEventHubResourceId')]"
+                                                    }
+                                                },
+                                                "identity": {
+                                                    "type": "UserAssigned",
+                                                    "userAssignedIdentity": "[parameters('armEventsSystemTopicUserManagedIdentityId')]"
+                                                }
+                                            },
+                                            "filter": {
+                                                "includedEventTypes": [
+                                                    "Microsoft.Resources.ResourceDeleteSuccess"
+                                                ],
+                                                "advancedFilters": [
+                                                    {
+                                                        "operatorType": "StringBeginsWith",
+                                                        "key": "data.operationName",
+                                                        "values": [
+                                                            "Microsoft.ContainerService/managedClusters/delete"
+                                                        ]
+                                                    }
+                                                ]
+                                            }
+                                        }
+                                    }
+                                ]
+                            }
+                        }
+                    },
+                    "existenceCondition": {
+                        "field": "fullName",
+                        "equals": "[concat(parameters('armEventsSystemTopicName'),'/',parameters('armEventsSystemTopicName'),'-aks-deletes')]"
+                    },
+                    "roleDefinitionIds": [
+                        "/providers/Microsoft.Authorization/roleDefinitions/b24988ac-6180-42a0-ab88-20f7382dd24c"
+                    ]
+                }
+            }
+        }
+    }
+}
